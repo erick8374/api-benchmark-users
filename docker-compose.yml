@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: users
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    restart: always
+
+  api-node:
+    build: 
+      context: ./api-node
+    container_name: api-node
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_started
+    restart: always
+
+volumes:
+  postgres-volume:
