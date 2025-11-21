@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+  # ========== Banco de Dados ==========
   postgres:
     image: postgres:17
     container_name: postgres-db
@@ -12,18 +13,106 @@ services:
       - "5432:5432"
     volumes:
       - postgres-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: always
+    networks:
+      - benchmark-network
 
-  api-node:
+  # ========== APIs Node.js (múltiplas instâncias) ==========
+  api-node-1:
     build: 
       context: ./api-node
-    container_name: api-node
-    ports:
-      - "3000:3000"
+    container_name: api-node-1
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: users
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
     restart: always
+    networks:
+      - benchmark-network
+
+  api-node-2:
+    build: 
+      context: ./api-node
+    container_name: api-node-2
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: users
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - benchmark-network
+
+  # ========== APIs Python (múltiplas instâncias) ==========
+  api-python-1:
+    build: 
+      context: ./api-python
+    container_name: api-python-1
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/users
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - benchmark-network
+
+  api-python-2:
+    build: 
+      context: ./api-python
+    container_name: api-python-2
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/users
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - benchmark-network
+
+  # ========== Gateway (Round Robin) ==========
+  gateway:
+    build: 
+      context: ./gateway
+    container_name: api-gateway
+    environment:
+      # Lista de upstreams (2 instâncias de cada API para escalabilidade)
+      # Cada API (Node e Python) tem 2 réplicas = 4 upstreams total
+      UPSTREAMS: "http://api-node-1:3000,http://api-node-2:3000,http://api-python-1:8000,http://api-python-2:8000"
+      RATE_LIMIT: 1000
+      WINDOW_SEC: 60
+      CB_FAIL_THRESHOLD: 5
+      CB_COOLDOWN_SEC: 30
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api-node-1
+      - api-node-2
+      - api-python-1
+      - api-python-2
+    restart: always
+    networks:
+      - benchmark-network
 
 volumes:
   postgres-volume:
+
+networks:
+  benchmark-network:
+    driver: bridge
