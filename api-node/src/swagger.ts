@@ -96,7 +96,7 @@ const swaggerSpec = swaggerJsDoc({
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "User API",
+      title: "User API Node + Express",
       version: "1.0.0",
       description: "CRUD de Usuários",
     },
