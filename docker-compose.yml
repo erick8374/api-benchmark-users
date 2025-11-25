@@ -27,6 +27,8 @@ services:
     build: 
       context: ./api-node
     container_name: api-node-1
+    ports:
+      - "3001:3000"
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -45,6 +47,8 @@ services:
     build: 
       context: ./api-node
     container_name: api-node-2
+    ports:
+      - "3002:3000"
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -64,12 +68,18 @@ services:
     build: 
       context: ./api-python
     container_name: api-python-1
+    ports:
+      - "8001:8000"              
+
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/users
     depends_on:
       postgres:
         condition: service_healthy
     restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./api-python/app:/app/app 
     networks:
       - benchmark-network
 
@@ -77,12 +87,17 @@ services:
     build: 
       context: ./api-python
     container_name: api-python-2
+    ports:
+      - "8002:8000"              
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/users
     depends_on:
       postgres:
         condition: service_healthy
     restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./api-python/app:/app/app 
     networks:
       - benchmark-network
 
@@ -109,20 +124,6 @@ services:
     restart: always
     networks:
       - benchmark-network
-
-  api-python:
-    build: 
-      context: ./api-python
-    container_name: api-python 
-    ports:
-      - "8000:8000"              
-    depends_on:
-      postgres:
-        condition: service_started
-    restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
-    volumes:
-      - ./api-python/app:/app/app 
       
 volumes:
   postgres-volume:
