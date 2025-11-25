@@ -10,10 +10,10 @@ import httpx
 # ---------- Config ----------
 # UPSTREAMS: lista de serviços backend (APIs Node e Python)
 # Pode ser configurado via variável de ambiente para escalar dinamicamente
-UPSTREAMS = [u.strip().rstrip("/") for u in os.getenv("UPSTREAMS","http://api-node:3000,http://api-python:8000").split(",") if u.strip()]
+UPSTREAMS = [u.strip().rstrip("/") for u in os.getenv("UPSTREAMS","http://api-node-1:3000,http://api-node-2:3000,http://api-python-1:8000,http://api-python-2:8000").split(",") if u.strip()]
 
 # Rate Limit: limite de requisições por IP
-RATE_LIMIT = int(os.getenv("RATE_LIMIT","100"))  # 100 req/min por padrão
+RATE_LIMIT = int(os.getenv("RATE_LIMIT","1000"))  # 100 req/min por padrão
 WINDOW_SEC = int(os.getenv("WINDOW_SEC","60"))
 
 # Circuit Breaker: proteção contra serviços com falha
