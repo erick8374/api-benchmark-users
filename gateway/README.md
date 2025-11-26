@@ -1,1 +1,7 @@
-O algoritmo Round Robin foi escolhido para o gateway devido à sua simplicidade e distribuição equitativa de carga. Como o objetivo é comparar o desempenho entre duas implementações de API (Node.js e Python), é fundamental que ambas recebam a mesma quantidade e tipo de requisições. Algoritmos mais complexos como Least Connections ou Least Time poderiam introduzir viés nos resultados, direcionando mais tráfego para a API mais rápida, o que invalidaria a comparação. Além disso, o Round Robin apresenta overhead mínimo, garantindo que a latência medida reflita principalmente o desempenho das APIs, não do gateway. O algoritmo foi complementado com Circuit Breaker para isolamento de falhas e Rate Limiting para proteção contra sobrecarga, funcionalidades essenciais em ambientes de produção.
+# Gateway
+
+Steps to run this project:
+
+1. Create and configure the `.env` file if needed
+2. Run `pip install -r requirements.txt`
+3. Run `python main.py`
