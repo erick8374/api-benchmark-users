@@ -15,7 +15,7 @@ export class User {
   username?: string;
 
   @Column()
-  passoword?: string;
+  password?: string;
 
   @CreateDateColumn()
   created_at?: Date;

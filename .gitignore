@@ -4,3 +4,4 @@ node_modules/
 build/
 tmp/
 temp/
+api-python/app/__pycache__
